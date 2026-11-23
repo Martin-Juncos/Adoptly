@@ -6,3 +6,13 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Artefactos locales que no forman parte del núcleo publicado del proyecto
+**/migrations/
+**/migration/
+**/seeders/
+**/seeds/
+**/__tests__/
+**/tests/
+**/*.test.*
+**/*.spec.*
