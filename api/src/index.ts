@@ -8,16 +8,23 @@ import 'dotenv/config';
 
 // Importa la aplicación Express configurada para el backend.
 import app from './app';
+import { testDatabaseConnection } from './config/database';
 
 // Obtiene el puerto del entorno o utiliza 3000 para desarrollo local.
 const port = Number(process.env.PORT) || 3000;
 
-// Inicia el servidor y registra la dirección donde quedó escuchando.
-function startServer(): void {
+// Comprueba la base antes de aceptar peticiones e inicia el servidor HTTP.
+async function startServer(): Promise<void> {
+  await testDatabaseConnection();
+  console.log('Conexión con PostgreSQL establecida.');
+
   app.listen(port, () => {
     console.log(`Servidor Adoptly escuchando en http://localhost:${port}`);
   });
 }
 
 // Ejecuta el servidor al iniciar el punto de entrada.
-startServer();
+startServer().catch((error: unknown) => {
+  console.error('No se pudo iniciar Adoptly:', error);
+  process.exitCode = 1;
+});
