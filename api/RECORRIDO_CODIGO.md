@@ -112,12 +112,4 @@ Una vez creada, el adoptante consulta su historial con `GET /adopciones/mias`. L
 | `src/config/database.ts` | Conexión a PostgreSQL; no crea las tablas automáticamente. |
 | `DATABASE.md` | Cómo preparar la base local y qué reglas representan sus tablas. |
 
-## 5. Para repasarlo con Thunder Client
 
-Usá la colección **Adoptly API**. Empezá por `GET /health`; después seguí registro/login, publicar mascota, agregar imagen, enviar solicitud, consultar desde cada rol y resolverla. Reemplazá los IDs de ejemplo por los IDs que devuelva cada respuesta, y pegá el token solo en las solicitudes privadas.
-
-Mientras lo recorrés, probá explicar estas tres cosas:
-
-1. ¿Qué diferencia hay entre `request.params`, `request.query` y `request.body`?
-2. ¿Por qué el ID del dueño se obtiene del token y no del cuerpo JSON?
-3. ¿Qué problema evita la transacción cuando se acepta una solicitud?
