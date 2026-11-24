@@ -54,7 +54,17 @@ Las rutas privadas reciben el encabezado `Authorization: Bearer <token>` obtenid
 | `PATCH` | `/mascotas/:id/desactivar` | Publicador propietario | Desactivar sin borrar la publicación. |
 | `POST` | `/mascotas/:id/solicitudes` | Adoptante | Enviar una solicitud si la publicación activa tiene una imagen. |
 
-El registro público no permite crear administradores. La gestión administrativa, solicitudes y adopciones quedan para etapas futuras.
+El registro público no permite crear administradores. Los adoptantes pueden consultar sus solicitudes y el publicador dueño puede revisarlas y resolverlas. El registro de adopciones y la gestión administrativa quedan para etapas futuras.
+
+Las imágenes se pueden consultar públicamente mientras la publicación y la cuenta del publicador estén activas. Para agregar, editar o eliminar imágenes, el publicador debe iniciar sesión y ser dueño de la publicación.
+
+| Método | Ruta | Acceso | Uso |
+| --- | --- | --- | --- |
+| `PUT` | `/mascotas/:id/imagenes/:imagenId` | Publicador propietario | Corregir la URL de una imagen propia. |
+| `DELETE` | `/mascotas/:id/imagenes/:imagenId` | Publicador propietario | Eliminar una imagen propia. |
+| `GET` | `/mascotas/:id/solicitudes` | Publicador propietario | Consultar las solicitudes de su publicación. |
+| `GET` | `/solicitudes/mias` | Adoptante | Consultar las solicitudes que envió. |
+| `PATCH` | `/solicitudes/:id/resolver` | Publicador propietario | Aceptar o rechazar una solicitud pendiente. |
 
 ## Estructura
 

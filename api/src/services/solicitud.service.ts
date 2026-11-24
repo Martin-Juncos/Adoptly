@@ -1,6 +1,6 @@
 /** Contiene las reglas necesarias para crear una solicitud de adopción. */
 
-import { UniqueConstraintError } from 'sequelize';
+import { Op, UniqueConstraintError } from 'sequelize';
 import { sequelize } from '../config/database';
 import { ImagenMascota } from '../models/imagen-mascota.model';
 import { Mascota } from '../models/mascota.model';
@@ -52,4 +52,103 @@ export async function crearSolicitud(datos: DatosNuevaSolicitud): Promise<Result
     if (error instanceof UniqueConstraintError) return { estado: 'duplicada' };
     throw error;
   }
+}
+
+// Lista únicamente las solicitudes enviadas por el adoptante autenticado.
+export async function listarSolicitudesDelAdoptante(adoptanteId: number): Promise<Solicitud[]> {
+  return Solicitud.findAll({
+    where: { adoptante_id: adoptanteId },
+    include: [{
+      model: Mascota,
+      as: 'mascota',
+      attributes: ['id', 'nombre', 'especie', 'raza', 'provincia', 'localidad', 'estado_adopcion', 'activa'],
+    }],
+    order: [['createdAt', 'DESC']],
+  });
+}
+
+export type ResultadoListaPublicador =
+  | { estado: 'mascota_no_encontrada' }
+  | { estado: 'encontrada'; solicitudes: Solicitud[] };
+
+// Comprueba que la mascota pertenezca al publicador y devuelve sus solicitudes.
+export async function listarSolicitudesDeMascota(mascotaId: number, publicadorId: number): Promise<ResultadoListaPublicador> {
+  const mascota = await Mascota.findOne({ where: { id: mascotaId, publicador_id: publicadorId } });
+  if (!mascota) return { estado: 'mascota_no_encontrada' };
+
+  const solicitudes = await Solicitud.findAll({
+    where: { mascota_id: mascotaId },
+    include: [{ model: Usuario, as: 'adoptante', attributes: ['id', 'nombre_completo'] }],
+    order: [['createdAt', 'ASC']],
+  });
+  return { estado: 'encontrada', solicitudes };
+}
+
+export type DecisionSolicitud = 'aceptar' | 'rechazar';
+export type ResultadoResolucion =
+  | { estado: 'solicitud_no_encontrada' }
+  | { estado: 'publicacion_no_propia' }
+  | { estado: 'ya_resuelta' }
+  | { estado: 'mascota_adoptada' }
+  | { estado: 'resuelta'; solicitud: Solicitud; solicitudes_rechazadas: number };
+
+// Resuelve una solicitud y actualiza todas las pendientes de esa mascota en una transacción.
+export async function resolverSolicitud(
+  solicitudId: number,
+  publicadorId: number,
+  decision: DecisionSolicitud,
+  motivoRechazo: string | null,
+): Promise<ResultadoResolucion> {
+  return sequelize.transaction(async (transaction) => {
+    const solicitudInicial = await Solicitud.findByPk(solicitudId, { transaction });
+    if (!solicitudInicial) return { estado: 'solicitud_no_encontrada' };
+
+    // Serializa las decisiones para que no se acepten dos solicitudes de la misma mascota.
+    const mascota = await Mascota.findOne({
+      where: { id: solicitudInicial.mascota_id, publicador_id: publicadorId },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!mascota) return { estado: 'publicacion_no_propia' };
+
+    const solicitud = await Solicitud.findOne({
+      where: { id: solicitudId, mascota_id: mascota.id },
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    });
+    if (!solicitud) return { estado: 'solicitud_no_encontrada' };
+    if (solicitud.estado !== 'pendiente') return { estado: 'ya_resuelta' };
+    if (mascota.estado_adopcion === 'adoptada') return { estado: 'mascota_adoptada' };
+
+    const fechaResolucion = new Date();
+    await solicitud.update({
+      estado: decision === 'aceptar' ? 'aceptada' : 'rechazada',
+      motivo_rechazo: decision === 'rechazar' ? motivoRechazo : null,
+      fecha_resolucion: fechaResolucion,
+    }, { transaction });
+
+    let solicitudesRechazadas = 0;
+    if (decision === 'aceptar') {
+      const [cantidad] = await Solicitud.update({
+        estado: 'rechazada',
+        motivo_rechazo: 'La mascota fue adoptada por otro solicitante.',
+        fecha_resolucion: fechaResolucion,
+      }, {
+        where: { mascota_id: mascota.id, estado: 'pendiente', id: { [Op.ne]: solicitud.id } },
+        transaction,
+      });
+      solicitudesRechazadas = cantidad;
+      await mascota.update({ estado_adopcion: 'adoptada' }, { transaction });
+    } else {
+      const solicitudesPendientes = await Solicitud.count({
+        where: { mascota_id: mascota.id, estado: 'pendiente' },
+        transaction,
+      });
+      if (solicitudesPendientes === 0) {
+        await mascota.update({ estado_adopcion: 'disponible' }, { transaction });
+      }
+    }
+
+    return { estado: 'resuelta', solicitud, solicitudes_rechazadas: solicitudesRechazadas };
+  });
 }
