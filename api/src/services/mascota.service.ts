@@ -12,7 +12,7 @@ interface NuevaMascota {
   especie: Especie;
   raza: string | null;
   tamanio: Tamanio;
-  fecha_nacimiento: Date | null;
+  fecha_nacimiento: string | null;
   descripcion: string;
   provincia: string;
   localidad: string;

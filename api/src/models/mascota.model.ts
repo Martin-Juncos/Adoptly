@@ -18,7 +18,7 @@ interface MascotaAttributes {
   especie: Especie;
   raza: string | null;
   tamanio: Tamanio;
-  fecha_nacimiento: Date | null;
+  fecha_nacimiento: string | null;
   descripcion: string;
   provincia: string;
   localidad: string;
@@ -40,7 +40,7 @@ export class Mascota extends Model<MascotaAttributes, MascotaCreationAttributes>
   declare especie: Especie;
   declare raza: string | null;
   declare tamanio: Tamanio;
-  declare fecha_nacimiento: Date | null;
+  declare fecha_nacimiento: string | null;
   declare descripcion: string;
   declare provincia: string;
   declare localidad: string;

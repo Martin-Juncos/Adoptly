@@ -55,6 +55,15 @@ export function requerirPublicador(request: Request, response: Response, next: N
   next();
 }
 
+// Evita que publicadores u otros roles envíen solicitudes de adopción.
+export function requerirAdoptante(request: Request, response: Response, next: NextFunction): void {
+  if (request.usuario?.rol !== 'adoptante') {
+    response.status(403).json({ error: 'Solo un adoptante puede enviar una solicitud.' });
+    return;
+  }
+  next();
+}
+
 // Expide token corto de acceso; el servidor vuelve a consultar la cuenta activa en cada petición.
 export function crearTokenUsuario(id: number): string {
   return jwt.sign({}, obtenerSecreto(), { subject: String(id), expiresIn: '2h', algorithm: 'HS256' });
