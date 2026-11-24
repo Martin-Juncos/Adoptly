@@ -9,12 +9,14 @@ import 'dotenv/config';
 // Importa la aplicación Express configurada para el backend.
 import app from './app';
 import { testDatabaseConnection } from './config/database';
+import { comprobarConfiguracionAutenticacion } from './middlewares/auth.middleware';
 
 // Obtiene el puerto del entorno o utiliza 3000 para desarrollo local.
 const port = Number(process.env.PORT) || 3000;
 
 // Comprueba la base antes de aceptar peticiones e inicia el servidor HTTP.
 async function startServer(): Promise<void> {
+  comprobarConfiguracionAutenticacion();
   await testDatabaseConnection();
   console.log('Conexión con PostgreSQL establecida.');
 

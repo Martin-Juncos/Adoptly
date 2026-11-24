@@ -5,6 +5,7 @@
 
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '../config/database';
+import { Usuario } from './usuario.model';
 
 export type Especie = 'perro' | 'gato';
 export type Tamanio = 'pequenio' | 'mediano' | 'grande';
@@ -68,3 +69,5 @@ Mascota.init(
   },
   { sequelize, tableName: 'Mascota' },
 );
+
+Mascota.belongsTo(Usuario, { foreignKey: 'publicador_id', as: 'publicador' });

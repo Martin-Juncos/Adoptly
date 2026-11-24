@@ -6,6 +6,7 @@
 // Importa Express para crear la instancia reutilizable de la aplicación.
 import express from 'express';
 import mascotasRouter from './routes/mascota.routes';
+import usuariosRouter from './routes/usuario.routes';
 
 // Crea la aplicación que utilizará el punto de entrada y las pruebas.
 const app = express();
@@ -13,6 +14,7 @@ const app = express();
 // Habilita el envío de cuerpos JSON y registra las rutas del recurso mascotas.
 app.use(express.json());
 app.use('/mascotas', mascotasRouter);
+app.use('/usuarios', usuariosRouter);
 
 // Responde a las comprobaciones de disponibilidad con un estado simple de la API.
 app.get('/health', (_request, response) => {
