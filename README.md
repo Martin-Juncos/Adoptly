@@ -1,173 +1,74 @@
-# 🐾 Adoptly — Backend
+# Adoptly
 
-API REST que conecta a personas que desean adoptar mascotas con refugios, rescatistas y particulares. Permite publicar animales, buscar por características y gestionar solicitudes de adopción.
+API REST para conectar a personas que quieren adoptar mascotas con refugios, rescatistas y particulares. El repositorio contiene el backend y una carpeta reservada para el frontend.
 
-## Objetivo
+## Estado actual
 
-Facilitar la búsqueda de un hogar para animales en adopción y centralizar la gestión de publicaciones y solicitudes.
+El backend implementa los flujos principales del MVP:
 
-## Alcance del MVP
+- Registro de publicadores y adoptantes, inicio de sesión y consulta/edición del perfil.
+- Publicaciones de mascotas: listado, detalle, filtro por especie, creación, edición y desactivación.
+- Administración de URLs de imágenes por el publicador propietario.
+- Solicitudes de adopción: envío por adoptantes, consulta y resolución por el publicador propietario.
+- Registro de adopción al aceptar una solicitud. La mascota queda adoptada y las demás solicitudes pendientes se rechazan.
 
-Esta primera etapa contempla únicamente el backend. La interfaz de usuario se desarrollará en una fase posterior.
-
-### Funcionalidades previstas
-
-- Registro e inicio de sesión.
-- Autenticación y autorización por roles.
-- Gestión de perfiles de publicadores: refugio, rescatista o particular.
-- Creación, consulta, edición y baja de publicaciones de mascotas.
-- Registro de fotografías mediante referencias o URLs.
-- Búsqueda pública con filtros por especie, ubicación, tamaño y edad.
-- Paginación de resultados.
-- Envío de solicitudes de adopción mediante un formulario.
-- Aceptación o rechazo de solicitudes por parte del publicador, con registro del motivo.
-- Consulta del estado de cada mascota.
-- Registro básico de auditoría.
-
-## Roles
-
-| Rol | Responsabilidades |
-| --- | --- |
-| Administrador | Administrar cuentas y estados de publicaciones. |
-| Publicador | Gestionar sus mascotas y resolver las solicitudes recibidas. |
-| Adoptante | Buscar mascotas y enviar solicitudes de adopción. |
-
-Los permisos deben verificarse en la API. Cada publicador solo puede gestionar sus propias publicaciones y solicitudes.
-
-## Estados de una mascota
-
-| Estado | Descripción |
-| --- | --- |
-| Disponible | Puede recibir solicitudes y no tiene solicitudes pendientes. |
-| Con solicitudes pendientes | Tiene al menos una solicitud pendiente de resolución. |
-| Adoptada | La adopción fue registrada y la mascota deja de recibir solicitudes. |
-
-La aceptación de una solicitud y el registro de la adopción deben realizarse de forma consistente para evitar que una mascota sea asignada a más de un adoptante.
+El alta pública no permite crear cuentas de administrador. Las operaciones privadas requieren un token y los publicadores solo pueden gestionar sus propios recursos.
 
 ## Tecnologías
 
-- **Node.js:** entorno de ejecución.
-- **Express:** servidor y API REST.
-- **PostgreSQL:** base de datos relacional.
-- **Sequelize:** modelos, relaciones y migraciones.
-- **Jest y Supertest:** pruebas de integración.
-- **OpenAPI / Swagger:** documentación de la API.
+- **API:** Node.js, TypeScript, Express 5.
+- **Base de datos:** PostgreSQL y Sequelize 6.
+- **Autenticación:** JWT y bcrypt.
+- **Frontend:** carpeta `client/` reservada para la interfaz; consultar [`client/README.md`](client/README.md) para su estado.
 
-## Organización propuesta
+## Estructura
 
 ```text
-api/
-├── src/
-│   ├── config/
-│   ├── models/
-│   ├── routes/
-│   ├── controllers/
-│   ├── services/
-│   ├── middlewares/
-│   ├── validators/
-│   ├── app.js
-│   └── server.js
-├── migrations/
-├── seeders/
-├── tests/
-├── docs/
-├── .env.example
-└── package.json
+Adoptly/
+├── api/
+│   ├── src/
+│   │   ├── config/       # Conexión a PostgreSQL
+│   │   ├── controllers/  # Validación y respuestas HTTP
+│   │   ├── middlewares/  # Autenticación
+│   │   ├── models/       # Modelos y relaciones
+│   │   ├── routes/       # Rutas HTTP
+│   │   ├── services/     # Reglas y operaciones de datos
+│   │   ├── app.ts        # Configuración de Express y rutas
+│   │   └── index.ts      # Inicio del servidor
+│   ├── .env.example
+│   ├── DATABASE.md       # Preparación y reglas de la base local
+│   └── README.md         # Rutas y uso de la API
+└── client/
+    └── README.md
 ```
 
-Esta estructura es una propuesta inicial y puede ajustarse durante la implementación.
+## Empezar con el backend
 
-## Modelo de datos
+1. Instalá Node.js, npm y PostgreSQL.
+2. Desde `api/`, instalá las dependencias:
 
-Entidades principales previstas:
+   ```bash
+   npm install
+   ```
 
-- **Usuario:** credenciales, rol y estado de cuenta.
-- **Perfil de publicador:** información del refugio, rescatista o particular.
-- **Mascota:** características, ubicación, publicador y estados de adopción y publicación.
-- **Foto de mascota:** referencias a las imágenes.
-- **Solicitud de adopción:** formulario, adoptante, mascota, estado y motivo de resolución.
-- **Adopción:** vínculo entre mascota, adoptante, publicador y solicitud aceptada.
-- **Registro de auditoría:** acciones relevantes realizadas en el sistema.
+3. Copiá `api/.env.example` como `api/.env` y completá la configuración local. Generá un `JWT_SECRET` aleatorio de al menos 32 caracteres. No compartas ni subas `.env`.
+4. Prepará la base de datos siguiendo [`api/DATABASE.md`](api/DATABASE.md).
+5. Desde `api/`, iniciá el servidor de desarrollo y comprobá `http://localhost:3000/health`:
 
-La entidad **Adopción** permitirá incorporar seguimiento posadopción en el futuro sin depender únicamente del estado de la mascota.
+   ```bash
+   npm run dev
+   ```
 
-## Seguridad y validaciones
+6. Para compilar TypeScript:
 
-La API deberá contemplar:
+   ```bash
+   npm run build
+   ```
 
-- Validación de entradas y parámetros de búsqueda.
-- Almacenamiento seguro de contraseñas mediante hash.
-- Autorización por rol y propiedad del recurso.
-- Manejo centralizado de errores.
-- Limitación de solicitudes mediante rate limiting.
-- Configuración de CORS.
-- Protección de credenciales mediante variables de entorno.
-- Exclusión de contraseñas y datos sensibles de respuestas y registros.
-- Transacciones para operaciones críticas del proceso de adopción.
+La referencia de endpoints, permisos y flujo de adopción está en [`api/README.md`](api/README.md).
 
-## Instalación y ejecución
+## Documentación
 
-> Los comandos definitivos se documentarán cuando estén configurados los scripts del proyecto.
-
-Pasos generales:
-
-1. Clonar el repositorio.
-2. Instalar las dependencias del backend.
-3. Crear el archivo `.env` tomando como referencia `.env.example`.
-4. Configurar la conexión a PostgreSQL.
-5. Ejecutar las migraciones.
-6. Iniciar el servidor.
-
-El archivo `.env` no debe subirse al repositorio.
-
-## Pruebas
-
-Se utilizarán **Jest y Supertest** para verificar especialmente:
-
-- Autenticación y permisos por rol.
-- Restricciones de acceso a recursos de otros usuarios.
-- Validación de formularios y filtros.
-- Aceptación y rechazo de solicitudes.
-- Transiciones de estado de las mascotas.
-- Prevención de adopciones duplicadas.
-- Consistencia de las operaciones sobre la base de datos.
-
-Las pruebas deberán ejecutarse sobre una base de datos independiente de producción.
-
-## Documentación de la API
-
-Los endpoints se documentarán con **OpenAPI / Swagger**, incluyendo:
-
-- Métodos y rutas.
-- Requisitos de autenticación.
-- Parámetros y cuerpos de las solicitudes.
-- Ejemplos de respuestas.
-- Códigos de estado y errores.
-
-## Integración continua
-
-El pipeline mínimo ejecutará:
-
-```text
-Lint → Tests → Build o validación de construcción
-```
-
-El paso de construcción se ajustará a la configuración del backend.
-
-## Futuras etapas
-
-Las siguientes funcionalidades quedan fuera del MVP actual:
-
-- Frontend.
-- Mensajería interna y notificaciones.
-- Favoritos y alertas.
-- Seguimiento posadopción.
-- Consentimiento mutuo para compartir avances.
-- Pagos y donaciones.
-- Moderación avanzada y denuncias.
-
-El seguimiento posadopción podría permitir registrar adaptación, controles veterinarios y fotografías. El publicador podrá consultar esos avances únicamente si ambas partes aceptan participar.
-
-## Estado del proyecto
-
-En planificación y desarrollo del backend del MVP. Las funcionalidades descritas representan el alcance previsto y no implican que ya estén implementadas.
+- [API: rutas, permisos y recorrido de adopción](api/README.md)
+- [Base de datos: configuración, tablas y reglas](api/DATABASE.md)
+- [Frontend: estado actual](client/README.md)
