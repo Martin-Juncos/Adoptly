@@ -1,6 +1,8 @@
-# Adoptly
+# 🐾 Adoptly
 
 API REST para conectar a personas que quieren adoptar mascotas con refugios, rescatistas y particulares. El repositorio contiene el backend y una carpeta reservada para el frontend.
+
+Trabajo integrador grupal para el **Bootcamp 5.0** de **Academy by Devlights**.
 
 ## Estado actual
 
