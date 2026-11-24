@@ -12,7 +12,7 @@ El backend implementa los flujos principales del MVP:
 - Publicaciones de mascotas: listado, detalle, filtro por especie, creación, edición y desactivación.
 - Administración de URLs de imágenes por el publicador propietario.
 - Solicitudes de adopción: envío por adoptantes, consulta y resolución por el publicador propietario.
-- Registro de adopción al aceptar una solicitud. La mascota queda adoptada y las demás solicitudes pendientes se rechazan.
+- Registro de adopción al aceptar una solicitud, y consulta de las adopciones propias del adoptante. La mascota queda adoptada y las demás solicitudes pendientes se rechazan.
 
 El alta pública no permite crear cuentas de administrador. Las operaciones privadas requieren un token y los publicadores solo pueden gestionar sus propios recursos.
 

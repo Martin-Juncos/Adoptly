@@ -39,6 +39,7 @@ Las rutas privadas reciben el encabezado `Authorization: Bearer <token>` obtenid
 | `POST` | `/usuarios/login` | Publico | Iniciar sesión y recibir token. |
 | `GET` | `/usuarios/perfil` | Privado | Consultar el perfil propio. |
 | `PUT` | `/usuarios/perfil` | Privado | Editar el perfil propio. |
+| `GET` | `/adopciones/mias` | Adoptante | Consultar las adopciones propias. |
 | `GET` | `/mascotas?especie=perro` | Publico | Listar mascotas activas; filtro opcional por especie. |
 | `GET` | `/mascotas/:id` | Publico | Consultar una publicación activa. |
 | `GET` | `/mascotas/:id/imagenes` | Publico | Consultar las URLs de imágenes de una publicación activa. |
@@ -48,7 +49,7 @@ Las rutas privadas reciben el encabezado `Authorization: Bearer <token>` obtenid
 | `PATCH` | `/mascotas/:id/desactivar` | Publicador propietario | Desactivar sin borrar la publicación. |
 | `POST` | `/mascotas/:id/solicitudes` | Adoptante | Enviar una solicitud si la publicación activa tiene una imagen. |
 
-El registro público no permite crear administradores. Los adoptantes pueden consultar sus solicitudes y el publicador dueño puede revisarlas y resolverlas. Al aceptar una solicitud, la API también devuelve el registro de adopción creado. La consulta administrativa y otras operaciones sobre adopciones quedan para futuras etapas.
+El registro público no permite crear administradores. Los adoptantes pueden consultar sus solicitudes y adopciones; el publicador dueño puede revisar y resolver las solicitudes de sus mascotas. Al aceptar una solicitud, la API también devuelve el registro de adopción creado. La consulta administrativa y otras operaciones sobre adopciones quedan para futuras etapas.
 
 Las imágenes se pueden consultar públicamente mientras la publicación y la cuenta del publicador estén activas. Para agregar, editar o eliminar imágenes, el publicador debe iniciar sesión y ser dueño de la publicación.
 
@@ -66,6 +67,7 @@ Las imágenes se pueden consultar públicamente mientras la publicación y la cu
 2. El adoptante consulta su estado con `GET /solicitudes/mias`. El publicador dueño revisa las solicitudes con `GET /mascotas/:id/solicitudes`.
 3. El dueño resuelve una solicitud pendiente con `PATCH /solicitudes/:id/resolver`. Para aceptar, envía `{"decision":"aceptar"}`. Para rechazar, envía `{"decision":"rechazar","motivo_rechazo":"Motivo breve"}`; el motivo es obligatorio.
 4. Al aceptar, la API crea un registro en `Adopcion`, marca la mascota como `adoptada` y rechaza las otras solicitudes pendientes. La respuesta incluye el registro de adopción. Si se rechaza la última solicitud pendiente, la mascota vuelve a `disponible`.
+5. El adoptante consulta sus adopciones con `GET /adopciones/mias`. La ruta devuelve únicamente las adopciones asociadas al usuario autenticado, junto con datos básicos de cada mascota.
 
 Errores habituales: `400` para datos o IDs inválidos; `401` sin token o con sesión inválida; `403` por rol incorrecto; `404` para recursos inexistentes o ajenos; y `409` para solicitudes duplicadas, sin imagen, ya resueltas o mascotas adoptadas.
 
@@ -84,3 +86,5 @@ src/
 ```
 
 No subas `.env` ni credenciales al repositorio. Las migraciones, seeds y tests locales están excluidos por `.gitignore`; por eso no se distribuyen comandos ni archivos de tests.
+
+Para seguir una petición desde la ruta hasta la base de datos, consultá la [guía de recorrido del código](./RECORRIDO_CODIGO.md).
