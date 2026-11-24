@@ -10,9 +10,17 @@ dist/
 # Artefactos locales que no forman parte del núcleo publicado del proyecto
 **/migrations/
 **/migration/
+**/migrations.*
+**/migration.*
+**/seed/
 **/seeders/
 **/seeds/
+**/seed.*
+**/seeds.*
+**/test/
+**/test.*
 **/__tests__/
 **/tests/
+**/*_test.*
 **/*.test.*
 **/*.spec.*

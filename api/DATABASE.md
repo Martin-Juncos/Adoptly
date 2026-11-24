@@ -113,7 +113,7 @@ Cada registro apunta a `Usuario.id` mediante `publicador_id`. Solo publicadores 
 
 ### `ImagenMascota` y `Solicitud`
 
-`ImagenMascota` almacena la URL de una imagen y el ID de la mascota. El publicador dueño puede agregar imágenes a una publicación activa; las URLs se pueden consultar públicamente mientras la publicación esté activa.
+`ImagenMascota` almacena cada URL asociada a una mascota. Solo el publicador dueño puede agregar, corregir o eliminar imágenes de una publicación activa. Las URLs se consultan públicamente mientras la publicación y el publicador estén activos.
 
 `Solicitud` guarda las respuestas del adoptante y su estado (`pendiente`, `aceptada` o `rechazada`). La base impide que un adoptante solicite dos veces la misma mascota. Solo se reciben solicitudes autenticadas para mascotas activas, no adoptadas, de publicadores activos y con al menos una imagen.
 El publicador dueño puede consultar y resolver solicitudes; para rechazar debe indicar un motivo. Al aceptar una, la mascota pasa a estado adoptada, se crea una fila en Adopcion y las demás pendientes se rechazan automáticamente. Si se rechaza la última solicitud pendiente, la mascota vuelve a disponible.

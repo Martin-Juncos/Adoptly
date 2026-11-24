@@ -66,6 +66,15 @@ Las imágenes se pueden consultar públicamente mientras la publicación y la cu
 | `GET` | `/solicitudes/mias` | Adoptante | Consultar las solicitudes que envió. |
 | `PATCH` | `/solicitudes/:id/resolver` | Publicador propietario | Aceptar o rechazar una solicitud pendiente. |
 
+## Flujo de solicitud y adopción
+
+1. El adoptante envía `POST /mascotas/:id/solicitudes`. La publicación debe estar activa y tener al menos una imagen; cada adoptante puede enviar una sola solicitud por mascota.
+2. El adoptante consulta su estado con `GET /solicitudes/mias`. El publicador dueño revisa las solicitudes con `GET /mascotas/:id/solicitudes`.
+3. El dueño resuelve una solicitud pendiente con `PATCH /solicitudes/:id/resolver`. Para aceptar, envía `{"decision":"aceptar"}`. Para rechazar, envía `{"decision":"rechazar","motivo_rechazo":"Motivo breve"}`; el motivo es obligatorio.
+4. Al aceptar, la API crea un registro en `Adopcion`, marca la mascota como `adoptada` y rechaza las otras solicitudes pendientes. La respuesta incluye el registro de adopción. Si se rechaza la última solicitud pendiente, la mascota vuelve a `disponible`.
+
+Errores habituales: `400` para datos o IDs inválidos; `401` sin token o con sesión inválida; `403` por rol incorrecto; `404` para recursos inexistentes o ajenos; y `409` para solicitudes duplicadas, sin imagen, ya resueltas o mascotas adoptadas.
+
 ## Estructura
 
 ```text
