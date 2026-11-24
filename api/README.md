@@ -54,7 +54,7 @@ Las rutas privadas reciben el encabezado `Authorization: Bearer <token>` obtenid
 | `PATCH` | `/mascotas/:id/desactivar` | Publicador propietario | Desactivar sin borrar la publicación. |
 | `POST` | `/mascotas/:id/solicitudes` | Adoptante | Enviar una solicitud si la publicación activa tiene una imagen. |
 
-El registro público no permite crear administradores. Los adoptantes pueden consultar sus solicitudes y el publicador dueño puede revisarlas y resolverlas. El registro de adopciones y la gestión administrativa quedan para etapas futuras.
+El registro público no permite crear administradores. Los adoptantes pueden consultar sus solicitudes y el publicador dueño puede revisarlas y resolverlas. Al aceptar una solicitud, la API también devuelve el registro de adopción creado. La consulta administrativa y otras operaciones sobre adopciones quedan para futuras etapas.
 
 Las imágenes se pueden consultar públicamente mientras la publicación y la cuenta del publicador estén activas. Para agregar, editar o eliminar imágenes, el publicador debe iniciar sesión y ser dueño de la publicación.
 
