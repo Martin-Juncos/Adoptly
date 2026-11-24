@@ -4,8 +4,8 @@
 
 import { Router } from 'express';
 import { desactivarMascota, editarMascota, obtenerMascotaPorId, obtenerMascotas, publicarMascota } from '../controllers/mascota.controller';
-import { agregarImagen, obtenerImagenes } from '../controllers/imagen-mascota.controller';
-import { enviarSolicitud } from '../controllers/solicitud.controller';
+import { agregarImagen, editarImagen, eliminarImagen, obtenerImagenes } from '../controllers/imagen-mascota.controller';
+import { enviarSolicitud, obtenerSolicitudesDeMascota } from '../controllers/solicitud.controller';
 import { autenticarUsuario, requerirAdoptante, requerirPublicador } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -24,7 +24,12 @@ router.patch('/:id/desactivar', autenticarUsuario, requerirPublicador, desactiva
 router.get('/:id/imagenes', obtenerImagenes);
 // Solo el dueño de una publicación activa puede agregarle una imagen.
 router.post('/:id/imagenes', autenticarUsuario, requerirPublicador, agregarImagen);
+// El dueño puede corregir la URL o quitar la imagen de su publicación.
+router.put('/:id/imagenes/:imagenId', autenticarUsuario, requerirPublicador, editarImagen);
+router.delete('/:id/imagenes/:imagenId', autenticarUsuario, requerirPublicador, eliminarImagen);
 // Solo adoptantes autenticados pueden solicitar una mascota.
 router.post('/:id/solicitudes', autenticarUsuario, requerirAdoptante, enviarSolicitud);
+// El publicador dueño puede consultar postulaciones de su publicación.
+router.get('/:id/solicitudes', autenticarUsuario, requerirPublicador, obtenerSolicitudesDeMascota);
 
 export default router;
