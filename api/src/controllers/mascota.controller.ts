@@ -28,6 +28,14 @@ function tieneLimitesDeTexto(body: Partial<CrearMascotaBody>): boolean {
     && (body.localidad?.trim().length ?? 0) <= 100;
 }
 
+// Comprueba una fecha de calendario sin convertirla en una hora dependiente de zona horaria.
+function fechaNacimientoValida(valor: unknown): valor is string {
+  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) return false;
+  const fechaUtc = new Date(`${valor}T00:00:00.000Z`);
+  const hoyUtc = new Date().toISOString().slice(0, 10);
+  return !Number.isNaN(fechaUtc.getTime()) && fechaUtc.toISOString().slice(0, 10) === valor && valor <= hoyUtc;
+}
+
 // Lee el filtro opcional de especie y devuelve solo mascotas con ese valor.
 export async function obtenerMascotas(
   request: Request,
@@ -125,11 +133,7 @@ export async function publicarMascota(
   }
 
   if (body.fecha_nacimiento !== undefined && body.fecha_nacimiento !== null) {
-    const fecha = new Date(`${body.fecha_nacimiento}T00:00:00Z`);
-    const hoy = new Date();
-    hoy.setUTCHours(0, 0, 0, 0);
-
-    if (typeof body.fecha_nacimiento !== 'string' || Number.isNaN(fecha.getTime()) || fecha.toISOString().slice(0, 10) !== body.fecha_nacimiento || fecha > hoy) {
+    if (!fechaNacimientoValida(body.fecha_nacimiento)) {
       response.status(400).json({ error: 'La fecha_nacimiento debe ser una fecha válida no futura (AAAA-MM-DD).'});
       return;
     }
@@ -142,7 +146,7 @@ export async function publicarMascota(
       especie: body.especie as Especie,
       raza: body.raza?.trim() || null,
       tamanio: body.tamanio as CrearMascotaBody['tamanio'],
-      fecha_nacimiento: body.fecha_nacimiento ? new Date(`${body.fecha_nacimiento}T00:00:00Z`) : null,
+      fecha_nacimiento: body.fecha_nacimiento ?? null,
       descripcion: (body.descripcion as string).trim(),
       provincia: (body.provincia as string).trim(),
       localidad: (body.localidad as string).trim(),
@@ -179,10 +183,7 @@ export async function editarMascota(request: Request, response: Response, next: 
     response.status(400).json({ error: 'La raza debe ser texto o null.' }); return;
   }
   if (body.fecha_nacimiento !== undefined && body.fecha_nacimiento !== null) {
-    if (typeof body.fecha_nacimiento !== 'string') { response.status(400).json({ error: 'La fecha_nacimiento debe tener formato AAAA-MM-DD.' }); return; }
-    const fecha = new Date(`${body.fecha_nacimiento}T00:00:00Z`);
-    const hoy = new Date(); hoy.setUTCHours(0, 0, 0, 0);
-    if (Number.isNaN(fecha.getTime()) || fecha.toISOString().slice(0, 10) !== body.fecha_nacimiento || fecha > hoy) {
+    if (!fechaNacimientoValida(body.fecha_nacimiento)) {
       response.status(400).json({ error: 'La fecha_nacimiento debe ser una fecha válida no futura (AAAA-MM-DD).' }); return;
     }
   }
@@ -191,7 +192,7 @@ export async function editarMascota(request: Request, response: Response, next: 
     const mascota = await editarMascotaPropia(Number(idTexto), request.usuario!.id, {
       nombre: body.nombre!.trim(), especie: body.especie as Especie, raza: body.raza?.trim() || null,
       tamanio: body.tamanio as CrearMascotaBody['tamanio'],
-      fecha_nacimiento: body.fecha_nacimiento ? new Date(`${body.fecha_nacimiento}T00:00:00Z`) : null,
+      fecha_nacimiento: body.fecha_nacimiento ?? null,
       descripcion: body.descripcion!.trim(), provincia: body.provincia!.trim(), localidad: body.localidad!.trim(),
     });
     if (!mascota) { response.status(404).json({ error: 'No se encontró una publicación activa propia con ese ID.' }); return; }

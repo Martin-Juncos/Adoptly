@@ -47,9 +47,12 @@ Las rutas privadas reciben el encabezado `Authorization: Bearer <token>` obtenid
 | `PUT` | `/usuarios/perfil` | Privado | Editar el perfil propio. |
 | `GET` | `/mascotas?especie=perro` | Publico | Listar mascotas activas; filtro opcional por especie. |
 | `GET` | `/mascotas/:id` | Publico | Consultar una publicación activa. |
+| `GET` | `/mascotas/:id/imagenes` | Publico | Consultar las URLs de imágenes de una publicación activa. |
 | `POST` | `/mascotas` | Publicador | Crear una publicación propia. |
+| `POST` | `/mascotas/:id/imagenes` | Publicador propietario | Agregar una URL de imagen a su publicación. |
 | `PUT` | `/mascotas/:id` | Publicador propietario | Editar todos los datos de su publicación. |
 | `PATCH` | `/mascotas/:id/desactivar` | Publicador propietario | Desactivar sin borrar la publicación. |
+| `POST` | `/mascotas/:id/solicitudes` | Adoptante | Enviar una solicitud si la publicación activa tiene una imagen. |
 
 El registro público no permite crear administradores. La gestión administrativa, solicitudes y adopciones quedan para etapas futuras.
 
