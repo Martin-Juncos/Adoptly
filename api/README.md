@@ -7,12 +7,6 @@ Backend REST de Adoptly, desarrollado con Node.js, TypeScript, Express, PostgreS
 - Node.js y npm.
 - PostgreSQL.
 
-## Aviso de dependencia `uuid`
-
-`npm audit` puede informar una vulnerabilidad moderada en `uuid`, una dependencia indirecta de Sequelize. El aviso afecta las funciones `v3`, `v5` y `v6` al escribir en buffers; no afecta `v4`. En las versiones instaladas para este proyecto, Sequelize usa `v1` y `v4`, y el código de Adoptly no llama directamente a `uuid`, así que no encontramos el comportamiento afectado en las rutas actuales. [Detalle del aviso](https://github.com/advisories/GHSA-w5hq-g745-h8pq).
-
-No ejecutes `npm audit fix --force` para este aviso: npm propone bajar Sequelize a una versión principal antigua e incompatible. Revisá nuevamente la alerta cuando actualices dependencias o incorpores un uso directo de `uuid`.
-
 ## Instalacion
 
 Desde `api/`, instala dependencias y prepara tu archivo local de configuracion:
