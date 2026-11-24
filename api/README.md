@@ -1,130 +1,70 @@
-# Adoptly API 🐾
+# Adoptly API
 
-Backend de Adoptly, una aplicación que conecta a personas que desean adoptar mascotas con refugios, rescatistas y particulares.
+Backend REST de Adoptly, desarrollado con Node.js, TypeScript, Express, PostgreSQL y Sequelize.
 
-## Tecnologías
+## Requisitos
 
-- Node.js
-- Express
-- PostgreSQL
-- Sequelize
+- Node.js y npm.
+- PostgreSQL.
 
-## Funcionalidades
+## Aviso de dependencia `uuid`
 
-- Registro e inicio de sesión.
-- Acceso por roles: Administrador, Publicador y Adoptante.
-- Gestión de perfiles de publicadores.
-- Publicación y edición de mascotas con referencias a fotografías.
-- Búsqueda de mascotas con filtros y paginación.
-- Envío de solicitudes de adopción.
-- Aceptación o rechazo de solicitudes.
-- Actualización del estado de las mascotas.
+`npm audit` puede informar una vulnerabilidad moderada en `uuid`, una dependencia indirecta de Sequelize. El aviso afecta las funciones `v3`, `v5` y `v6` al escribir en buffers; no afecta `v4`. En las versiones instaladas para este proyecto, Sequelize usa `v1` y `v4`, y el código de Adoptly no llama directamente a `uuid`, así que no encontramos el comportamiento afectado en las rutas actuales. [Detalle del aviso](https://github.com/advisories/GHSA-w5hq-g745-h8pq).
 
-## Estructura del backend
+No ejecutes `npm audit fix --force` para este aviso: npm propone bajar Sequelize a una versión principal antigua e incompatible. Revisá nuevamente la alerta cuando actualices dependencias o incorpores un uso directo de `uuid`.
 
-El backend se organiza como una aplicación monolítica: todas las funcionalidades forman parte de un mismo servidor Express y utilizan una misma base de datos.
+## Instalacion
+
+Desde `api/`, instala dependencias y prepara tu archivo local de configuracion:
+
+```bash
+npm install
+```
+
+Copia `.env.example` como `.env`, completa PostgreSQL y configura `JWT_SECRET` con una clave aleatoria de al menos 32 caracteres. Puedes generarla con:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Prepara las tablas siguiendo [DATABASE.md](./DATABASE.md). Luego inicia y compila:
+
+```bash
+npm run dev
+npm run build
+```
+
+## Rutas implementadas
+
+Las rutas privadas reciben el encabezado `Authorization: Bearer <token>` obtenido al registrarse o iniciar sesión.
+
+| Metodo | Ruta | Acceso | Uso |
+| --- | --- | --- | --- |
+| `GET` | `/health` | Publico | Comprobar que la API responde. |
+| `POST` | `/usuarios/registro` | Publico | Crear cuenta publicador o adoptante. |
+| `POST` | `/usuarios/login` | Publico | Iniciar sesión y recibir token. |
+| `GET` | `/usuarios/perfil` | Privado | Consultar el perfil propio. |
+| `PUT` | `/usuarios/perfil` | Privado | Editar el perfil propio. |
+| `GET` | `/mascotas?especie=perro` | Publico | Listar mascotas activas; filtro opcional por especie. |
+| `GET` | `/mascotas/:id` | Publico | Consultar una publicación activa. |
+| `POST` | `/mascotas` | Publicador | Crear una publicación propia. |
+| `PUT` | `/mascotas/:id` | Publicador propietario | Editar todos los datos de su publicación. |
+| `PATCH` | `/mascotas/:id/desactivar` | Publicador propietario | Desactivar sin borrar la publicación. |
+
+El registro público no permite crear administradores. La gestión administrativa, solicitudes y adopciones quedan para etapas futuras.
+
+## Estructura
 
 ```text
-api/
-├── src/
-│   ├── config/
-│   │   └── database.ts
-│   ├── models/          # Modelos de datos de Sequelize
-│   ├── controllers/     # Lógica que atiende cada operación de la API
-│   ├── routes/          # Endpoints HTTP
-│   ├── middlewares/     # Funciones intermedias de Express
-│   ├── app.ts           # Configura y exporta la aplicación Express
-│   └── index.ts         # Comprueba la base e inicia el servidor
-├── .env.example
-├── .gitignore
-├── package-lock.json
-├── package.json
-├── tsconfig.json
-└── README.md
+src/
+├── config/          # Conexión a PostgreSQL
+├── controllers/     # Validación y respuestas HTTP
+├── middlewares/     # Autenticación y permisos
+├── models/          # Modelos Sequelize
+├── routes/          # Rutas HTTP
+├── services/        # Operaciones de datos
+├── app.ts           # Configuración de Express
+└── index.ts         # Inicio del servidor
 ```
 
-| Archivo o carpeta | Responsabilidad |
-| --- | --- |
-| `src/config/database.ts` | Configurar y comprobar la conexión a PostgreSQL mediante Sequelize. |
-| `src/models/` | Definir los modelos y sus relaciones. |
-| `src/controllers/` | Resolver las solicitudes y aplicar las reglas de negocio. |
-| `src/routes/` | Definir los endpoints y conectarlos con sus controladores. |
-| `src/middlewares/` | Validar datos, verificar autenticación y permisos, y manejar errores. |
-| `src/app.ts` | Configurar Express, los middlewares y las rutas. |
-| `src/index.ts` | Comprobar la conexión a la base e iniciar el servidor. |
-| `tsconfig.json` | Configurar la compilación de TypeScript. |
-| `package-lock.json` | Fijar las versiones exactas de dependencias instaladas. |
-| `.env.example` | Mostrar las variables de entorno necesarias, sin credenciales reales. |
-
-## Modelo de datos
-
-Las entidades principales serán:
-
-- **Usuario:** datos de acceso, rol y estado de cuenta.
-- **PerfilPublicador:** información del refugio, rescatista o particular.
-- **Mascota:** características, fotografías, ubicación y estado.
-- **SolicitudAdopcion:** formulario enviado por el adoptante y resolución del publicador.
-- **Adopcion:** relación entre la mascota, el adoptante y el publicador.
-
-La entidad `Adopcion` permitirá incorporar seguimiento posadopción en una etapa futura.
-
-## Configuración local
-
-1. Ingresar a la carpeta `api`.
-2. Instalar las dependencias con `npm install`.
-3. Crear una base de datos en PostgreSQL.
-4. Crear el archivo `.env` tomando como referencia `.env.example`.
-5. Configurar la conexión a la base de datos.
-6. Iniciar el servidor con el script definido en `package.json`.
-
-### Variables de entorno
-
-```dotenv
-PORT=3000
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=adoptly
-DB_USER=postgres
-DB_PASSWORD=replace_me
-```
-
-El archivo `.env` debe incluirse en `.gitignore`.
-
-### Crear manualmente la tabla `Mascota`
-
-El proyecto no incluye migraciones ni seeds. Para habilitar la consulta `GET /mascotas`, ejecutá una vez este SQL en la base `adoptly` (por ejemplo, desde pgAdmin o `psql`):
-
-```sql
-CREATE TABLE IF NOT EXISTS "Mascota" (
-  id INTEGER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-  publicador_id INTEGER NOT NULL,
-  nombre VARCHAR(100) NOT NULL,
-  especie VARCHAR(20) NOT NULL CHECK (especie IN ('perro', 'gato')),
-  raza VARCHAR(100),
-  tamanio VARCHAR(20) NOT NULL CHECK (tamanio IN ('pequenio', 'mediano', 'grande')),
-  fecha_nacimiento DATE,
-  descripcion TEXT NOT NULL,
-  provincia VARCHAR(100) NOT NULL,
-  localidad VARCHAR(100) NOT NULL,
-  estado_adopcion VARCHAR(30) NOT NULL DEFAULT 'disponible'
-    CHECK (estado_adopcion IN ('disponible', 'con_solicitudes_pendientes', 'adoptada')),
-  activa BOOLEAN NOT NULL DEFAULT TRUE,
-  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-```
-
-`publicador_id` se incluirá en la relación con `Usuario` cuando se implemente esa tabla. Este SQL crea solamente la tabla `Mascota`; no agrega usuarios ni registros de ejemplo.
-
-## Reglas principales
-
-- Cada publicador administra únicamente sus mascotas y las solicitudes recibidas para ellas.
-- Cada adoptante puede consultar sus propias solicitudes.
-- Las mascotas pueden estar disponibles, con solicitudes pendientes o adoptadas.
-- Una mascota adoptada no recibe nuevas solicitudes.
-- La aceptación de una solicitud debe registrar la adopción y actualizar la mascota mediante una transacción.
-- Las contraseñas deben almacenarse mediante hash y los permisos deben verificarse en el servidor.
-
-## Estado del proyecto
-
-En desarrollo. Las funcionalidades descritas se incorporarán progresivamente.
+No subas `.env` ni credenciales al repositorio. Las migraciones, seeds y tests locales están excluidos por `.gitignore`; por eso no se distribuyen comandos ni archivos de tests.
