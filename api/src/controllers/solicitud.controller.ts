@@ -115,6 +115,7 @@ export async function resolverSolicitud(request: Request, response: Response, ne
 
     response.status(200).json({
       solicitud: resultado.solicitud,
+      adopcion: resultado.adopcion,
       solicitudes_rechazadas: resultado.solicitudes_rechazadas,
     });
   } catch (error) { next(error); }
